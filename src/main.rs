@@ -1,6 +1,11 @@
 use std::process::exit;
 
+mod args;
+mod rational;
+
 use args::Commands;
+
+use crate::rational::Rational;
 
 const HELP_MESSAGE: &str = "USAGE
 \t./307multigrains n1 n2 n3 n4 po pw pc pb ps
@@ -15,8 +20,6 @@ DESCRIPTION
 \tpc\tprice of one unit of corn
 \tpb\tprice of one unit of barley
 \tps\tprice of one unit of soy";
-
-mod args;
 
 fn main() {
     match Commands::try_from_args() {
