@@ -86,9 +86,9 @@ impl Add<Rational> for Rational {
         let p = if self.sign == rhs.sign {
             self.p + rhs.p
         } else if self.sign == Positive {
-            self.p.checked_sub(rhs.p).unwrap_or(rhs.p - self.p)
+            self.p.checked_sub(rhs.p).unwrap_or_else(|| rhs.p - self.p)
         } else {
-            rhs.p.checked_sub(self.p).unwrap_or(self.p - rhs.p)
+            rhs.p.checked_sub(self.p).unwrap_or_else(|| self.p - rhs.p)
         };
         let q = self.q;
         let sign = if self.p > rhs.p { self.sign } else { rhs.sign };
