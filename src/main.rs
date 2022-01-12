@@ -2,8 +2,10 @@ use std::process::exit;
 
 mod args;
 mod rational;
+mod tableau;
 
-use args::Commands;
+use args::{Arguments, Commands};
+use tableau::TableauBuilder;
 
 use crate::rational::Rational;
 
@@ -21,6 +23,13 @@ DESCRIPTION
 \tpb\tprice of one unit of barley
 \tps\tprice of one unit of soy";
 
+const CONSTRAINTS: [[u64; 5]; 4] = [
+    [1, 0, 1, 0, 2],
+    [1, 2, 0, 1, 0],
+    [2, 1, 0, 1, 0],
+    [0, 0, 3, 1, 2],
+];
+
 fn main() {
     match Commands::try_from_args() {
         Err(e) => {
@@ -32,6 +41,27 @@ fn main() {
             println!("{}", HELP_MESSAGE);
             exit(0)
         }
-        Ok(Commands::Program(_arguments)) => {}
+        Ok(Commands::Program(arguments)) => {
+            if let Err(e) = program(arguments) {
+                eprintln!("{}", e);
+                exit(84)
+            }
+        }
     }
+}
+
+fn program(arguments: Arguments) -> Result<(), String> {
+    let tableau = TableauBuilder::new(&[
+        arguments.po,
+        arguments.pw,
+        arguments.pc,
+        arguments.pb,
+        arguments.ps,
+    ])
+    .add_constraint(&CONSTRAINTS[0], arguments.n1)?
+    .add_constraint(&CONSTRAINTS[1], arguments.n2)?
+    .add_constraint(&CONSTRAINTS[2], arguments.n3)?
+    .add_constraint(&CONSTRAINTS[3], arguments.n4)?
+    .get_tableau();
+    Ok(())
 }

@@ -4,15 +4,15 @@ pub enum Commands {
 }
 
 pub struct Arguments {
-    n1: u32,
-    n2: u32,
-    n3: u32,
-    n4: u32,
-    po: u32,
-    pw: u32,
-    pc: u32,
-    pb: u32,
-    ps: u32,
+    pub n1: u64,
+    pub n2: u64,
+    pub n3: u64,
+    pub n4: u64,
+    pub po: u64,
+    pub pw: u64,
+    pub pc: u64,
+    pub pb: u64,
+    pub ps: u64,
 }
 
 const TOTAL_ARGS: usize = 9;
@@ -25,7 +25,7 @@ impl Commands {
         }
         let args = std::env::args()
             .skip(1)
-            .map(|arg| arg.parse::<u32>())
+            .map(|arg| arg.parse::<u64>())
             .collect::<Result<Vec<_>, _>>();
         match args {
             Err(e) => Err(e.to_string()),
