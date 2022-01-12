@@ -5,7 +5,7 @@ mod rational;
 mod tableau;
 
 use args::{Arguments, Commands};
-use tableau::TableauBuilder;
+use tableau::{SolvedSimplex, Tableau, TableauBuilder};
 
 use crate::rational::Rational;
 
@@ -51,7 +51,7 @@ fn main() {
 }
 
 fn program(arguments: Arguments) -> Result<(), String> {
-    let tableau = TableauBuilder::new(&[
+    let mut tableau = TableauBuilder::new(&[
         arguments.po,
         arguments.pw,
         arguments.pc,
@@ -63,5 +63,36 @@ fn program(arguments: Arguments) -> Result<(), String> {
     .add_constraint(&CONSTRAINTS[2], arguments.n3)?
     .add_constraint(&CONSTRAINTS[3], arguments.n4)?
     .get_tableau();
+    let res = tableau.apply_simplex();
+    print_results(arguments, res);
     Ok(())
+}
+
+fn print_results(arguments: Arguments, res: SolvedSimplex) {
+    println!(
+        "Resources: {} F1, {} F2, {} F3, {} F4\n",
+        arguments.n1, arguments.n2, arguments.n3, arguments.n4
+    );
+    let prices = &[
+        arguments.po,
+        arguments.pw,
+        arguments.pc,
+        arguments.pb,
+        arguments.ps,
+    ];
+    ["Oat", "Wheat", "Corn", "Barley", "Soy"]
+        .iter()
+        .enumerate()
+        .for_each(|(idx, &name)| {
+            let qty = res.get_coef(idx);
+            println!(
+                "{}: {:.prec$} units at ${}/unit",
+                name,
+                qty,
+                prices[idx],
+                prec = if qty == 0.0 { 0 } else { 2 }
+            )
+        });
+    println!("");
+    println!("Total production value: ${:.2}", res.get_max());
 }

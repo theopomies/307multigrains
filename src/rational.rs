@@ -11,8 +11,29 @@ enum Sign {
     Negative,
 }
 
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::{
+    cmp::Ordering,
+    fmt::Display,
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+};
 use Sign::*;
+
+impl Rational {
+    pub fn is_neg(&self) -> bool {
+        self.sign == Negative
+    }
+}
+
+impl Display for Rational {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match (self.sign, self.q) {
+            (Positive, 1) => write!(f, "{}", self.p),
+            (Positive, q) => write!(f, "{}/{}", self.p, q),
+            (_, 1) => write!(f, "-{}", self.p),
+            _ => write!(f, "-{}/{}", self.p, self.q),
+        }
+    }
+}
 
 impl From<u64> for Rational {
     fn from(p: u64) -> Self {
@@ -92,11 +113,12 @@ impl Add<Rational> for Rational {
         };
         let q = self.q;
         let sign = if self.p > rhs.p { self.sign } else { rhs.sign };
+        let np = p / p.gcd(&q);
 
         Self {
-            p: p / p.gcd(&q),
+            p: np,
             q: q / p.gcd(&q),
-            sign,
+            sign: if np == 0 { Positive } else { sign },
         }
     }
 }
@@ -146,11 +168,12 @@ impl Mul for Rational {
         } else {
             Negative
         };
+        let np = p / p.gcd(&q);
 
         Self {
-            p: p / p.gcd(&q),
+            p: np,
             q: q / p.gcd(&q),
-            sign,
+            sign: if np == 0 { Positive } else { sign },
         }
     }
 }
@@ -165,6 +188,16 @@ impl Div for Rational {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
+        if rhs.p == 0 {
+            panic!("Attempt to divide by 0.");
+        }
+        if self.p == 0 {
+            return Self {
+                p: 0,
+                q: 1,
+                sign: Positive,
+            };
+        }
         let p = self.p * rhs.q;
         let q = self.q * rhs.p;
 
@@ -173,11 +206,12 @@ impl Div for Rational {
         } else {
             Negative
         };
+        let np = p / p.gcd(&q);
 
         Self {
-            p: p / p.gcd(&q),
+            p: np,
             q: q / p.gcd(&q),
-            sign,
+            sign: if np == 0 { Positive } else { sign },
         }
     }
 }
@@ -185,6 +219,39 @@ impl Div for Rational {
 impl DivAssign for Rational {
     fn div_assign(&mut self, rhs: Self) {
         *self = *self / rhs
+    }
+}
+
+impl PartialOrd for Rational {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.sign != other.sign {
+            if self.sign == Positive {
+                return Some(Ordering::Greater);
+            }
+            return Some(Ordering::Less);
+        }
+        let mut lhs = *self;
+        let mut rhs = *other;
+        if lhs.q != rhs.q {
+            let lcm = lhs.q.lcm(&rhs.q);
+            let lhs_factor = lcm / lhs.q;
+            let rhs_factor = lcm / rhs.q;
+
+            lhs.p *= lhs_factor;
+            lhs.q *= lhs_factor;
+            rhs.p *= rhs_factor;
+            rhs.q *= rhs_factor;
+        }
+        match lhs.sign {
+            Positive => Some(lhs.p.cmp(&rhs.p)),
+            _ => Some(rhs.p.cmp(&lhs.p)),
+        }
+    }
+}
+
+impl Ord for Rational {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 
@@ -210,6 +277,7 @@ impl GcdLcm for u64 {
         let lcm = *self * (*other / gcd);
         (gcd, lcm)
     }
+
     fn gcd(&self, other: &Self) -> Self {
         // Use Stein's algorithm
         let mut m = *self;
