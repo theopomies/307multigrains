@@ -5,9 +5,7 @@ mod rational;
 mod tableau;
 
 use args::{Arguments, Commands};
-use tableau::{SolvedSimplex, Tableau, TableauBuilder};
-
-use crate::rational::Rational;
+use tableau::{SolvedSimplex, TableauBuilder};
 
 const HELP_MESSAGE: &str = "USAGE
 \t./307multigrains n1 n2 n3 n4 po pw pc pb ps
@@ -51,7 +49,7 @@ fn main() {
 }
 
 fn program(arguments: Arguments) -> Result<(), String> {
-    let mut tableau = TableauBuilder::new(&[
+    let tableau = TableauBuilder::new(&[
         arguments.po,
         arguments.pw,
         arguments.pc,
