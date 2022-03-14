@@ -7,6 +7,7 @@ Jean-Eude grows grains: oat, wheat, corn, barley and soy. He uses four different
 | corn   | 1  | 0  | 0  | 3 |
 | barley | 0  | 1  | 1  | 1 |
 | soy    | 2  | 0  | 0  | 2 |
+
 Keeping in mind that he has limited yearly quantities of each type of fertilizer, he would like to optimize his output according to the grains’ prices.
 
 
