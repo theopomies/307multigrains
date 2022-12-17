@@ -17,6 +17,8 @@ With a smile, you’re going to develop a program that will take his fertilizer 
 ```sh
 $ make re
 ```
+### _Why does this use `make` for a Rust project_
+Because the automated grading engine at Epitech only builds with `make`
 
 ## Examples
 ```sh
